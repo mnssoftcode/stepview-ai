@@ -64,4 +64,6 @@ models/*
 # Experiment outputs and logs
 experiments/runs/*
 !experiments/runs/.gitkeep
+experiments/visualizations/*
+!experiments/visualizations/.gitkeep
 *.log
