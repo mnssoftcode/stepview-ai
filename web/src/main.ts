@@ -148,9 +148,16 @@ class StepViewWebApp {
       // Automatically load default trail image for immediate visualization
       await this.loadSampleImage("/samples/trail.png");
     } catch (err) {
-      console.error("Failed to load ONNX model:", err);
-      this.statusEl.textContent = `Error: ${err instanceof Error ? err.message : String(err)}`;
-      this.showAlert("Failed to load ONNX model. Ensure model file is accessible.");
+      console.error("[StepView] Model initialization failed:", err);
+      const rawMsg = err instanceof Error ? err.message : String(err);
+      if (rawMsg.startsWith("MODEL LOAD ERROR")) {
+        this.statusEl.textContent = `[MODEL LOAD ERROR] ${rawMsg.replace("MODEL LOAD ERROR: ", "")}`;
+      } else if (rawMsg.startsWith("INFERENCE BACKEND ERROR")) {
+        this.statusEl.textContent = `[BACKEND ERROR] ${rawMsg.replace("INFERENCE BACKEND ERROR: ", "")}`;
+      } else {
+        this.statusEl.textContent = `Error: ${rawMsg}`;
+      }
+      this.showAlert(rawMsg);
     }
   }
 
@@ -166,9 +173,9 @@ class StepViewWebApp {
     this.statusEl.textContent = "Requesting rear camera access...";
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      this.showAlert(
-        "Camera API not supported in this browser context (HTTPS required on mobile). Use Test Samples or File Upload below."
-      );
+      const msg = "CAMERA ERROR: Camera API not supported in this context (HTTPS required on mobile). Use Test Samples or File Upload below.";
+      this.statusEl.textContent = "[CAMERA ERROR] MediaDevices API unsupported.";
+      this.showAlert(msg);
       return;
     }
 
@@ -206,8 +213,8 @@ class StepViewWebApp {
     } catch (err) {
       console.warn("Camera access failed:", err);
       const msg = err instanceof Error ? err.message : String(err);
-      this.showAlert(`Camera access unavailable: ${msg}. Try the sample terrain images or image upload.`);
-      this.statusEl.textContent = "Camera unavailable.";
+      this.statusEl.textContent = `[CAMERA ERROR] ${msg}`;
+      this.showAlert(`CAMERA ERROR: Camera access unavailable: ${msg}. Try the sample terrain images or image upload.`);
     }
   }
 

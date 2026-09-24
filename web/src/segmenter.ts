@@ -8,9 +8,15 @@
 import * as ort from "onnxruntime-web";
 import { SegmentationResult } from "./types.js";
 
-// Point wasm assets to the web root
-ort.env.wasm.wasmPaths = "/";
-ort.env.wasm.numThreads = 1; // Single-thread mode guarantees universal browser compatibility
+// Configure ONNX Runtime Web asset paths
+if (typeof window !== "undefined") {
+  const origin = window.location.origin ? window.location.origin + "/" : "/";
+  ort.env.wasm.wasmPaths = origin;
+  // Default to single-thread mode for universal compatibility unless cross-origin isolation is active
+  ort.env.wasm.numThreads = window.crossOriginIsolated && typeof SharedArrayBuffer !== "undefined"
+    ? Math.min(4, navigator.hardwareConcurrency || 2)
+    : 1;
+}
 
 export class WebTerrainSegmenter {
   private session: ort.InferenceSession | null = null;
@@ -34,27 +40,124 @@ export class WebTerrainSegmenter {
     return this.session !== null;
   }
 
-  public async loadModel(modelUrl: string = "/models/stepview_segmentation.onnx"): Promise<void> {
-    console.log(`[StepView] Loading ONNX model from: ${modelUrl}`);
-
-    // Try WebGPU first if supported, fallback to Wasm
-    const hasWebGPU = typeof navigator !== "undefined" && "gpu" in navigator;
-    const preferredProviders = hasWebGPU ? ["webgpu", "wasm"] : ["wasm"];
-
+  /**
+   * Helper to check if an asset URL is accessible on the server.
+   */
+  private async checkAssetExists(url: string): Promise<boolean> {
     try {
-      this.session = await ort.InferenceSession.create(modelUrl, {
-        executionProviders: preferredProviders,
+      const res = await fetch(url, { method: "HEAD" });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  public async loadModel(modelUrl: string = "/models/stepview_segmentation.onnx"): Promise<void> {
+    console.log(`[StepView] Initializing ONNX Runtime Web for model: ${modelUrl}`);
+
+    // 1. Separate Model Load verification: fetch model bytes first.
+    // This cleanly separates MODEL LOAD ERROR from INFERENCE BACKEND ERROR.
+    let modelBuffer: ArrayBuffer;
+    try {
+      const resp = await fetch(modelUrl);
+      if (!resp.ok) {
+        throw new Error(`HTTP ${resp.status} (${resp.statusText || "Resource Unavailable"})`);
+      }
+      modelBuffer = await resp.arrayBuffer();
+      if (!modelBuffer || modelBuffer.byteLength === 0) {
+        throw new Error("Model file is empty (0 bytes)");
+      }
+      console.log(
+        `[StepView] Model binary downloaded successfully (${(modelBuffer.byteLength / 1024 / 1024).toFixed(2)} MB)`
+      );
+    } catch (fetchErr) {
+      const msg = fetchErr instanceof Error ? fetchErr.message : String(fetchErr);
+      throw new Error(`MODEL LOAD ERROR: Model file could not be loaded: ${msg}`);
+    }
+
+    const basePath = typeof window !== "undefined" && window.location?.origin
+      ? window.location.origin + "/"
+      : "/";
+    ort.env.wasm.wasmPaths = basePath;
+
+    // 2. Check cross-origin isolation and configure threading safely
+    const isCrossIsolated = typeof window !== "undefined" && Boolean(window.crossOriginIsolated);
+    const hasSharedArrayBuffer = typeof SharedArrayBuffer !== "undefined";
+    const canUseThreads = isCrossIsolated && hasSharedArrayBuffer;
+
+    if (canUseThreads) {
+      const threads = Math.min(4, typeof navigator !== "undefined" ? (navigator.hardwareConcurrency || 2) : 2);
+      ort.env.wasm.numThreads = threads;
+      console.log(`[StepView] Cross-origin isolated: enabled ${threads} WASM worker threads.`);
+    } else {
+      ort.env.wasm.numThreads = 1;
+      console.log("[StepView] Universal single-threaded WASM mode active (cross-origin isolation inactive).");
+    }
+
+    // 3. Pre-flight check on runtime assets to ensure availability
+    const wasmReady = await this.checkAssetExists(`${basePath}ort-wasm-simd-threaded.wasm`);
+    const mjsReady = await this.checkAssetExists(`${basePath}ort-wasm-simd-threaded.mjs`);
+    if (!wasmReady && !mjsReady) {
+      console.warn(`[StepView] Pre-flight warning: WASM assets not verified at ${basePath}`);
+    }
+
+    // 4. Tiered Provider Selection:
+    // Preferred: WebGPU -> WASM SIMD/threaded (when available) -> standard WASM fallback
+    const hasWebGPU = typeof navigator !== "undefined" && "gpu" in navigator;
+    let jsepReady = false;
+    if (hasWebGPU) {
+      jsepReady = await this.checkAssetExists(`${basePath}ort-wasm-simd-threaded.jsep.mjs`);
+    }
+
+    const modelBytes = new Uint8Array(modelBuffer);
+
+    // Tier 1: WebGPU
+    if (hasWebGPU && jsepReady) {
+      try {
+        console.log("[StepView] Attempting WebGPU provider...");
+        this.session = await ort.InferenceSession.create(modelBytes, {
+          executionProviders: ["webgpu"],
+          graphOptimizationLevel: "all",
+        });
+        this.activeProvider = "webgpu";
+        console.log("[StepView] ONNX model successfully initialized with provider: webgpu");
+        return;
+      } catch (gpuErr) {
+        console.warn("[StepView] WebGPU provider failed, falling back to WASM:", gpuErr);
+      }
+    }
+
+    // Tier 2: WASM (SIMD / Threaded if supported)
+    if (canUseThreads) {
+      try {
+        console.log("[StepView] Attempting multi-threaded WASM provider...");
+        this.session = await ort.InferenceSession.create(modelBytes, {
+          executionProviders: ["wasm"],
+          graphOptimizationLevel: "all",
+        });
+        this.activeProvider = "wasm-simd";
+        console.log("[StepView] ONNX model successfully initialized with provider: wasm-simd");
+        return;
+      } catch (simdErr) {
+        console.warn("[StepView] Multi-threaded WASM failed, falling back to single-threaded WASM:", simdErr);
+      }
+    }
+
+    // Tier 3: Universal Single-Threaded WASM Fallback
+    try {
+      console.log("[StepView] Attempting single-threaded WASM fallback...");
+      ort.env.wasm.numThreads = 1;
+      this.session = await ort.InferenceSession.create(modelBytes, {
+        executionProviders: ["wasm"],
         graphOptimizationLevel: "all",
       });
-      this.activeProvider = hasWebGPU ? "webgpu" : "wasm";
-      console.log(`[StepView] ONNX model successfully loaded with provider: ${this.activeProvider}`);
-    } catch (err) {
-      console.warn("[StepView] Preferred provider failed, falling back to pure WASM:", err);
-      this.session = await ort.InferenceSession.create(modelUrl, {
-        executionProviders: ["wasm"],
-      });
       this.activeProvider = "wasm";
-      console.log("[StepView] ONNX model successfully loaded with fallback WASM provider.");
+      console.log("[StepView] ONNX model successfully initialized with fallback provider: wasm");
+      return;
+    } catch (wasmErr) {
+      console.error("[StepView] WASM backend initialization failed:", wasmErr);
+      const msg = wasmErr instanceof Error ? wasmErr.message : String(wasmErr);
+      throw new Error(`INFERENCE BACKEND ERROR: ONNX Runtime WASM failed to initialize: ${msg}`);
     }
   }
 

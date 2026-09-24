@@ -37,6 +37,7 @@ node_modules/
 web/node_modules/
 web/dist/
 web/public/*.wasm
+web/public/*.mjs
 
 # Testing and coverage
 .pytest_cache/

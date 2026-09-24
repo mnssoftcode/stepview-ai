@@ -91,7 +91,63 @@
 
 ---
 
-## 5. Next Milestone & Immediate Focus
+## 5. Production ONNX Runtime Web Failure & Resolution
 
-* **Next Milestone:** Test and iterate on real device web camera performance, add perspective calibration controls, and evaluate field ergonomics.
-* **Immediate Focus:** Await user direction on the next single task.
+* **Reported Issue:**
+  * Live Render website (`https://stepview-ai.onrender.com/`) failed during AI initialization.
+  * Browser alert banner displayed: `"Failed to load ONNX model. Ensure model file is accessible."`
+  * Metric status log displayed: `"Error: no available backend found. ERR: [wasm] Error: previous call to 'initWasm()' failed."`
+  * Model inference never began, leaving the interface in an error state.
+
+* **Root Cause:**
+  1. **Missing `.mjs` Loader Scripts in Production Build:** In `onnxruntime-web` (v1.20+), WebAssembly and WebGPU (JSEP) runtimes require companion ES module scripts (`ort-wasm-simd-threaded.jsep.mjs`, `ort-wasm-simd-threaded.mjs`, etc.) alongside the binary `.wasm` files.
+  2. **Incomplete Prebuild Copy Script:** `web/scripts/copy-wasm.js` previously copied only `*.wasm` files from `node_modules/onnxruntime-web/dist/` to `public/`, ignoring all `.mjs` files.
+  3. **HTTP 404 on Runtime Loader Module:** When the browser initialized the engine, ONNX Runtime Web dynamically imported `/ort-wasm-simd-threaded.jsep.mjs` (or `/ort-wasm-simd-threaded.mjs`). Because the file did not exist in `web/dist/`, the server returned HTTP 404.
+  4. **`initWasm()` State Poisoning:** Once dynamic import failed inside ONNX Runtime Web's `initWasm()`, the runtime set an internal flag `isInitWasmFailed = true`. Any subsequent fallback attempt to create a session immediately threw `Error: previous call to 'initWasm()' failed.` without retrying.
+  5. **Vite Dev Server Public Import Block:** In local development, placing `.mjs` in `/public` caused Vite's `viteTransformMiddleware` to block dynamic imports of files in `/public`.
+  6. **Lack of Cross-Origin Isolation on Render:** Render static sites deployed manually do not automatically enforce COOP/COEP headers, causing `crossOriginIsolated` to be false and disabling `SharedArrayBuffer` for multi-threaded WASM.
+
+* **Resolution & Fixes:**
+  1. **Updated `web/scripts/copy-wasm.js`:** Copies all WebAssembly binaries (`*.wasm`) AND companion ES module scripts (`*.mjs`) matching `ort-wasm*` (8 files total) to `public/` and `dist/`.
+  2. **Vite Dev Server Middleware in `web/vite.config.ts`:** Implemented a custom `serve-ort-assets` server middleware that intercepts requests for `/ort-wasm*` and `/ort.*`, serving them directly with correct MIME types (`application/wasm`, `application/javascript`) and COOP/COEP headers, completely bypassing Vite's transform middleware error.
+  3. **Model Fetch Separation in `web/src/segmenter.ts`:** Downloads model bytes first via `fetch(modelUrl)` to independently verify network accessibility and file size, cleanly distinguishing `MODEL LOAD ERROR` from `INFERENCE BACKEND ERROR`.
+  4. **Safe Threading & Universal Compatibility:** Detects `window.crossOriginIsolated && typeof SharedArrayBuffer !== "undefined"`. If false, forces `ort.env.wasm.numThreads = 1` so the runtime runs single-threaded WASM without requiring shared memory headers.
+  5. **Asset Pre-Flight & Multi-Tier Provider Fallback:** Probes runtime asset availability via HEAD requests prior to engine invocation:
+     - Tier 1: WebGPU (`webgpu`) if supported and JSEP assets are accessible.
+     - Tier 2: Multi-threaded WASM (`wasm-simd`) if cross-origin isolated.
+     - Tier 3: Universal single-threaded WASM (`wasm`) fallback.
+  6. **Actionable UI Error Reporting in `web/src/main.ts`:** Status bar and alert banner explicitly display exact failure classifications (`[MODEL LOAD ERROR]`, `[INFERENCE BACKEND ERROR]`, `[CAMERA ERROR]`) with actual HTTP codes and runtime error messages.
+  7. **Automated Testing:** Added `tests/test_web_production_assets.py` verifying model availability, WASM/MJS binary integrity in `dist/`, build configurations, and runtime options. 38/38 automated tests passing (100%).
+
+* **Local Production Build Verification:**
+  * Served `web/dist/` via HTTP server on port 8080 and connected headless Chrome via Chrome DevTools Protocol.
+  * Model loaded cleanly into memory (4.12 MB).
+  * Backend initialized with provider: `WASM` (and `WEBGPU` when supported).
+  * Sample terrain inferences verified:
+    - Trail sample (`trail.png`): 148 ms total latency (ONNX: 91 ms), hazard refusal detected.
+    - Park sample (`park.png`): 71 ms total latency (ONNX: 27 ms), Top Step candidate scored 0.93.
+    - Village sample (`village.png`): 63 ms total latency (ONNX: 28 ms), Top Step candidate scored 0.95.
+    - Image upload: 55 ms total latency (ONNX: 27 ms).
+    - Camera refusal test: Permission denied caught and displayed as `[CAMERA ERROR]`.
+
+---
+
+## 6. Current Technical Stack
+
+| Component | Technology | Version / Notes |
+|---|---|---|
+| **OS** | macOS | Host system |
+| **Python** | Python 3.12.13 | Managed in `.venv` |
+| **Package Manager** | `uv 0.12.18` / `npm 10.8.2` | Fast reproducible environments |
+| **ML Framework** | PyTorch 2.2.2 / ONNX 1.23.0 | Export & validation runtime |
+| **Inference Runtime** | ONNX Runtime 1.23.2 (Python) / ONNX Runtime Web 1.30.0 | CPU / WebGPU / WASM execution |
+| **Frontend Foundation**| TypeScript 5.4.5, Vite 5.2.11 | Modern ESM web development |
+| **Testing** | pytest 9.1.1 | 38 unit/integration tests passing (100% pass rate) |
+
+---
+
+## 7. Next Milestone & Immediate Focus
+
+* **Next Milestone:** Verify live deployment on Render after push, test on mobile browsers (Android/iOS), and evaluate runtime latency.
+* **Immediate Focus:** Push fixes to GitHub and complete verification on live Render deployment.
+
