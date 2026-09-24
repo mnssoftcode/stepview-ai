@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stepview"
+version = "0.1.0"
+description = "StepView: Terrain visual suitability and foot-placement candidate identification"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+    { name = "StepView Team" }
+]
+dependencies = [
+    "numpy>=1.26.0,<2.0.0",
+    "torch>=2.2.0",
+    "torchvision>=0.17.0",
+    "opencv-python-headless>=4.8.0",
+    "pillow>=10.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["stepview*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
