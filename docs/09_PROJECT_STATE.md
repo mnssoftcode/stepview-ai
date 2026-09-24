@@ -8,9 +8,19 @@
 
 ## 1. Project Overview & Current Phase
 
-* **Current Phase:** **Phase 1 — Dataset Proof & Pipeline Verification** (Exit Condition Met; Ready to Transition to **Phase 2 — Segmentation Baseline**).
+* **Current Phase:** **Phase 5 (Step 2) — ONNX Footstep Pipeline & Web Prototype Foundation Complete**
 * **Official Project Name:** **StepView**.
-* **State Assessment:** Complete end-to-end data pipeline established. Real terrain bootstrap data (26 frames across 18 scenes) converted from RUGD, validated with strict class schemas, partitioned into leakage-free scene splits, inspected with visual overlays, and test-covered across 15 automated pytest cases.
+* **Strategic Product Architecture:**
+  * **Web-First & Web-Only:** StepView is designed strictly as a browser-first web application running on-device inference via **ONNX Runtime Web** (WebGPU / WebAssembly).
+  * **No Native Apps:** No React Native, native Android, or native iOS application codebases. The website works on Android phones, iPhones, tablets, and laptops directly via standard web browsers.
+  * **Zero Server Transmission:** Video frames remain on the client device for privacy, latency, and reliability.
+* **State Assessment:**
+  * **End-to-End ONNX Footstep Pipeline:** `scripts/propose_footsteps_onnx.py` connects `models/stepview_segmentation.onnx` directly into `FootstepProposalEngine`. Successfully executed across multiple diverse terrain test images with hazard refusal and candidate ranking.
+  * **Web Application Foundation (`web/`):** TypeScript, Vite, ONNX Runtime Web (`onnxruntime-web`), and HTML5 Canvas renderer implemented. Supports live camera (`getUserMedia`) with graceful fallback to sample terrain test images (`trail.png`, `park.png`).
+  * **Browser Footstep Engine:** `FootstepProposalEngineWeb` implemented in TypeScript with two-pass distance transform, perspective scaling, and Non-Maximum Suppression.
+  * **Production Build Verified:** `npm run build` cleanly packages the application in 1.80s.
+  * **Dev Server Active:** Running on `http://127.0.0.1:5173/` with COOP/COEP headers for multi-threaded WASM support.
+  * **Software Engineering Status:** 33/33 automated pytest tests passing cleanly.
 
 ---
 
@@ -25,77 +35,63 @@
   * `docs/13_PUBLIC_DATASET_EVALUATION.md`: Comparative evaluation of RUGD, RELLIS-3D, WildScenes, Freiburg Forest.
   * `docs/18_RUGD_LABEL_MAPPING.md`: Detailed 25-to-6 class conversion ontology and non-safety limitations notice.
   * `docs/19_RUGD_BOOTSTRAP_REPORT.md`: Comprehensive audit report on the 26 converted RUGD samples, scene distributions, and visual panels.
+  * `docs/20_TRAINING_DATA_STRATEGY.md`: Three-dataset strategy (A: bootstrap, B: semantic pretraining, C: smartphone validation), median frequency class weights, and missing class handling.
+  * `docs/21_RUGD_DATASET_B_SELECTION.md`: 600-frame selection matrix across 18 scenes with uniform temporal strides and strict scene isolation.
 * [x] **Version Control & Repository Setup:**
   * Git repository initialized on `main` branch with clean conventional commit history.
   * Comprehensive `.gitignore` protecting binary assets.
-* [x] **Reproducible Python 3.12 Environment (`uv`):**
-  * `pyproject.toml` with pinned dependencies (`torch==2.2.2`, `torchvision==0.17.2`, `opencv-python-headless==4.11.0.86`, `numpy==1.26.4`, `pillow==12.3.0`, `pytest==9.1.1`).
-  * `.venv` created via `uv` using system Python 3.12.13.
-* [x] **Package Structure & Loader (`stepview/`):**
-  * `stepview/data/schema.py`: Explicit `TerrainClass` enum (0..5), color palette, `SampleMetadata`, `validate_mask_classes()`.
-  * `stepview/data/dataset.py`: `StepViewDataset` and `stepview_collate_fn` separating image loading, mask loading, class validation, transforms, and metadata.
-* [x] **Data Pipeline & Inspection Tooling:**
-  * `scripts/prepare_rugd_bootstrap.py`: Deterministic conversion script mapping RUGD RGB masks to 8-bit single-channel indexed masks.
-  * `scripts/visualize_dataset.py`: CLI inspection tool generating side-by-side composite panels (Original, Semantic Mask, Alpha Overlay, Legend), class statistics, and defect detection.
-* [x] **Bootstrap Data Ingestion:**
-  * Curated 26 real terrain frames across 18 scenes from RUGD into `data/images/` and `data/masks/` with `rugd_` namespace.
-  * Generated `data/metadata/manifest.json` and `data/metadata/class_stats.json`.
-  * Partitioned into leakage-free scene splits: Train (16 samples, 11 scenes), Val (5 samples, 3 scenes), Test (5 samples, 4 scenes).
+* [x] **Python Environment & Package Structure:**
+  * Python 3.12 managed via `uv` with pinned packages in `pyproject.toml`.
+  * `stepview/data/`: `TerrainClass` enum, datasets, collate functions, validation.
+  * `stepview/models/`: `StepViewSegmentationModel` (MobileNetV3-Small + LR-ASPP, ~1.08M params).
+  * `stepview/inference/`: PyTorch `TerrainSegmenter` and standalone `ONNXTerrainSegmenter`.
+  * `stepview/geometry/`: `FootstepProposalEngine` (Euclidean distance transform, perspective scaling, clearance checks, NMS).
+* [x] **Model Checkpoints & ONNX Models:**
+  * `models/stepview_segmentation.onnx`: 4.12 MB, opset 17, $256 \times 256$ input, 4.84 ms / 206 FPS CPU inference.
+  * `experiments/runs/dataset_b_baseline/best_checkpoint.pt`: PyTorch baseline (0.4464 Val mIoU, 0.5006 Test Ground IoU).
+* [x] **Deployment Scripts:**
+  * `scripts/export_onnx.py`: CLI checkpoint-to-ONNX exporter with graph verification.
+  * `scripts/predict_onnx.py`: Standalone ONNX segmentation CLI.
+  * `scripts/propose_footsteps_onnx.py`: Complete ONNX-to-footstep pipeline generating overlays and JSON metadata.
+* [x] **Web Product Prototype (`web/`):**
+  * `web/package.json`, `web/tsconfig.json`, `web/vite.config.ts`.
+  * `web/src/types.ts`: TypeScript contracts for terrain classes, candidates, segmentation results.
+  * `web/src/segmenter.ts`: ONNX Runtime Web session management, WebGPU / WASM execution.
+  * `web/src/footstepEngine.ts`: Browser-side 2D Footstep Candidate Engine with perspective scaling and NMS.
+  * `web/src/renderer.ts`: HTML5 Canvas rendering for video, mask overlay, candidate footprints, and status indicators.
+  * `web/src/main.ts`: Application coordinator, camera stream management, frame loop, and live metrics.
+  * `web/index.html`: Responsive high-contrast user interface.
 * [x] **Verification & Tests:**
-  * 15/15 unit and integration tests passing in pytest (including schema invariants, shape validation, synthetic tests, inspection script execution, and real RUGD bootstrap data integrity).
+  * 33/33 automated tests passing in pytest.
+  * Web build verification: `npm run build` passes with zero errors.
 
 ---
 
-## 3. Missing Work
+## 3. Current Technical Stack
 
-* [ ] **Baseline Segmentation Model (Phase 2):**
-  * PyTorch baseline architecture (MobileNetV3-Small encoder + LR-ASPP segmentation head).
-  * Training pipeline with class-weighted Cross-Entropy + Dice loss, optimizer, and learning rate scheduler.
-  * Experiment tracking and metric logging (`experiments/runs/`).
-* [ ] **Evaluation Pipeline (Phase 2):**
-  * Evaluation script measuring mIoU on held-out scenes (initial engineering target: mIoU >= 0.70 on Ground).
-* [ ] **Candidate Placement & Scoring (Phase 3):**
-  * 2D morphological candidate generation, perspective scaling heuristics, obstacle clearance filtering.
-* [ ] **Depth & Geometry (Phase 4):**
-  * Monocular depth estimation / geometric surface assessment.
-* [ ] **Export & Web/Mobile Prototypes (Phases 5 & 6):**
-  * ONNX export, Web prototype (`web/`), Mobile application (`mobile/`).
-
----
-
-## 4. Current Technical Stack
-
-| Component | Selected Version | Notes |
+| Component | Technology | Version / Notes |
 |---|---|---|
 | **OS** | macOS | Host system |
-| **Python** | 3.12.13 | Managed in `.venv` |
-| **Package Manager** | `uv 0.12.18` | Fast reproducible venv and resolver |
-| **ML Framework** | PyTorch 2.2.2 | CPU runtime on macOS |
-| **Vision Ecosystem** | Torchvision 0.17.2, OpenCV 4.11.0.86, Pillow 12.3.0 | Headless OpenCV |
-| **Numerical Engine** | NumPy 1.26.4 | Pinned `<2.0.0` for PyTorch 2.2 compatibility |
-| **Testing** | pytest 9.1.1 | 15 unit/integration tests passing |
+| **Python** | Python 3.12.13 | Managed in `.venv` |
+| **Package Manager** | `uv 0.12.18` / `npm 10.8.2` | Fast reproducible environments |
+| **ML Framework** | PyTorch 2.2.2 / ONNX 1.23.0 | Export & validation runtime |
+| **Inference Runtime** | ONNX Runtime 1.23.2 (Python) / ONNX Runtime Web 1.20+ | CPU / WebGPU / WASM execution |
+| **Frontend Foundation**| TypeScript 5.4.5, Vite 5.2.11 | Modern ESM web development |
+| **Testing** | pytest 9.1.1 | 33 unit/integration tests passing (100% pass rate) |
 
 ---
 
-## 5. Current Component Statuses
+## 4. Current Component Statuses
 
-* **Dataset Tooling:** Complete (`scripts/visualize_dataset.py`, `scripts/prepare_rugd_bootstrap.py`).
-* **Dataset Contract:** Complete (`data/raw/rugd/`, `data/images/`, `data/masks/`, `data/metadata/`, `data/splits/`).
-* **Dataset Assets:** 26 real terrain frames converted and validated.
-* **Model Status:** None. Checkpoints directory `models/` ready.
-* **Application Status:** None. UI decoupled from ML core.
-* **Testing Status:** 15/15 tests passing.
-
----
-
-## 6. Current Blockers
-
-* **None for Phase 1.** Phase 1 exit condition ("Dataset pipeline works end-to-end with real images and masks") is met.
+* **Dataset Assets:** Dataset A (26 frames) and Dataset B (600 frames) available.
+* **ONNX Model:** `models/stepview_segmentation.onnx` active and served in `web/public/models/`.
+* **Python Pipeline:** `scripts/propose_footsteps_onnx.py` tested and operational.
+* **Web Prototype:** Ready for browser access at `http://127.0.0.1:5173/`.
+* **Testing Status:** 33/33 tests passing.
 
 ---
 
-## 7. Next Milestone & Exact Next Action
+## 5. Next Milestone & Immediate Focus
 
-* **Next Milestone:** **Phase 2 — Baseline Terrain Segmentation Model**
-* **Exact Next Action:**
-  * Design the compact PyTorch segmentation baseline model (`stepview/models/segmentation.py`) using a lightweight MobileNetV3 backbone and implement the training loop (`stepview/training/train.py`).
+* **Next Milestone:** Test and iterate on real device web camera performance, add perspective calibration controls, and evaluate field ergonomics.
+* **Immediate Focus:** Await user direction on the next single task.

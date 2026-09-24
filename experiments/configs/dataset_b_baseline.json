@@ -1,0 +1,24 @@
+{
+  "experiment_name": "dataset_b_baseline",
+  "dataset_version": "Dataset B (RUGD 600-sample curated subset, v0.2.0)",
+  "data_dir": "data",
+  "model": {
+    "architecture": "MobileNetV3-Small + LR-ASPP",
+    "num_classes": 6,
+    "pretrained_backbone": true,
+    "freeze_backbone": true,
+    "input_resolution": [256, 256]
+  },
+  "training": {
+    "epochs": 5,
+    "batch_size": 16,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "optimizer": "AdamW",
+    "scheduler": "CosineAnnealingLR",
+    "random_seed": 42,
+    "weight_mode": "median_freq"
+  },
+  "device": "auto",
+  "output_dir": "experiments/runs/dataset_b_baseline"
+}

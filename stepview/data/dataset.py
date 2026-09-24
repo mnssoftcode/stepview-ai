@@ -78,6 +78,7 @@ class StepViewDataset(Dataset):
         target_transform: Optional[Callable[[np.ndarray], torch.Tensor]] = None,
         joint_transform: Optional[Callable[[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]] = None,
         validate_classes_on_load: bool = True,
+        target_size: Optional[Tuple[int, int]] = None,
     ) -> None:
         """Initialize StepViewDataset.
 
@@ -90,6 +91,7 @@ class StepViewDataset(Dataset):
             target_transform: Optional transform callable for mask.
             joint_transform: Optional joint transform (e.g. geometric augmentations).
             validate_classes_on_load: If True, checks that mask classes are valid.
+            target_size: Optional (height, width) to resize image and mask to.
         """
         super().__init__()
         self.root_dir = Path(root_dir)
@@ -98,6 +100,7 @@ class StepViewDataset(Dataset):
         self.target_transform = target_transform
         self.joint_transform = joint_transform
         self.validate_classes_on_load = validate_classes_on_load
+        self.target_size = target_size
 
         self.images_dir = self.root_dir / "images"
         self.masks_dir = self.root_dir / "masks"
@@ -255,6 +258,11 @@ class StepViewDataset(Dataset):
                 - Image tensor: shape (3, H, W), float32 normalized [0.0, 1.0].
                 - Mask tensor: shape (H, W), int64 (torch.long).
         """
+        if self.target_size is not None:
+            th, tw = self.target_size
+            image = cv2.resize(image, (tw, th), interpolation=cv2.INTER_LINEAR)
+            mask = cv2.resize(mask, (tw, th), interpolation=cv2.INTER_NEAREST)
+
         if self.joint_transform is not None:
             image, mask = self.joint_transform(image, mask)
 

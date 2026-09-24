@@ -53,11 +53,13 @@ class TerrainSegmenter:
     def segment(
         self,
         image_input: Union[np.ndarray, str, Path],
+        input_size: Optional[Tuple[int, int]] = None,
     ) -> Dict[str, Any]:
         """Perform semantic terrain segmentation on an input image.
 
         Args:
             image_input: RGB image array (H, W, 3) uint8 or Path to image file.
+            input_size: Optional (width, height) tuple to resize input prior to inference.
 
         Returns:
             Dict containing:
@@ -76,14 +78,19 @@ class TerrainSegmenter:
 
         orig_h, orig_w = img_rgb.shape[:2]
 
+        # Optional preprocessing resize
+        proc_rgb = img_rgb
+        if input_size is not None:
+            proc_rgb = cv2.resize(img_rgb, input_size, interpolation=cv2.INTER_LINEAR)
+
         # Convert HWC uint8 -> CHW float32 [0.0, 1.0]
-        tensor = torch.from_numpy(img_rgb.transpose((2, 0, 1))).float() / 255.0
+        tensor = torch.from_numpy(proc_rgb.transpose((2, 0, 1))).float() / 255.0
         tensor = tensor.unsqueeze(0).to(self.device)
 
         # Forward pass
         logits = self.model(tensor)
 
-        # If spatial size differs from input, resize back to original resolution
+        # If spatial size differs from original input, interpolate back to original resolution
         if logits.shape[-2:] != (orig_h, orig_w):
             logits = F.interpolate(logits, size=(orig_h, orig_w), mode="bilinear", align_corners=False)
 

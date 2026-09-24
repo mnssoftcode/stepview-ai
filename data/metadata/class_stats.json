@@ -1,25 +1,25 @@
 {
-  "total_pixels": 9838400,
+  "total_pixels": 227040000,
   "classes": {
     "0": {
       "name": "background",
-      "pixel_count": 1051397,
-      "percentage": 10.686666531143276
+      "pixel_count": 23060094,
+      "percentage": 10.156841966173362
     },
     "1": {
       "name": "ground",
-      "pixel_count": 1235788,
-      "percentage": 12.5608635550496
+      "pixel_count": 22148790,
+      "percentage": 9.755457188160676
     },
     "2": {
       "name": "obstacle",
-      "pixel_count": 284614,
-      "percentage": 2.8928890876565294
+      "pixel_count": 3360596,
+      "percentage": 1.4801779422128258
     },
     "3": {
       "name": "vegetation",
-      "pixel_count": 6037811,
-      "percentage": 61.3698467230444
+      "pixel_count": 152693444,
+      "percentage": 67.25398343904158
     },
     "4": {
       "name": "hole",
@@ -28,8 +28,8 @@
     },
     "5": {
       "name": "uncertain_surface",
-      "pixel_count": 1228790,
-      "percentage": 12.489734103106196
+      "pixel_count": 25777076,
+      "percentage": 11.353539464411558
     }
   }
 }

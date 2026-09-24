@@ -323,9 +323,10 @@ def test_rugd_bootstrap_dataset_integrity() -> None:
     val_ds = StepViewDataset(root_dir=data_dir, split="val")
     test_ds = StepViewDataset(root_dir=data_dir, split="test")
 
-    assert len(train_ds) == 16
-    assert len(val_ds) == 5
-    assert len(test_ds) == 5
+    # Support either Dataset A (bootstrap: 16/5/5) or Dataset B (scaled: 380/110/110)
+    assert len(train_ds) in (16, 380)
+    assert len(val_ds) in (5, 110)
+    assert len(test_ds) in (5, 110)
 
     # Check sample item properties
     sample = train_ds[0]

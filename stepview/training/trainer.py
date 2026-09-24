@@ -108,6 +108,10 @@ class StepViewTrainer:
         results["val_loss"] = total_val_loss / max(num_batches, 1)
         return results
 
+    def get_confusion_matrix(self) -> np.ndarray:
+        """Return the accumulated confusion matrix from the last evaluation."""
+        return self.metrics_tracker.get_confusion_matrix()
+
     def save_checkpoint(
         self,
         path: Path,

@@ -32,6 +32,12 @@ venv/
 ENV/
 env/
 
+# Node.js & Web builds
+node_modules/
+web/node_modules/
+web/dist/
+web/public/*.wasm
+
 # Testing and coverage
 .pytest_cache/
 .coverage
@@ -60,6 +66,10 @@ models/*
 *.pt
 *.pth
 *.onnx
+
+# Allow required production ONNX models
+!models/stepview_segmentation.onnx
+!web/public/models/stepview_segmentation.onnx
 
 # Experiment outputs and logs
 experiments/runs/*

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="description" content="StepView — Real-time on-device outdoor terrain segmentation and 2D footstep candidate recommendation." />
+    <title>StepView — Real-Time 2D Footstep Placement AI</title>
+    <style>
+      :root {
+        --bg-color: #0d1117;
+        --card-bg: #161b22;
+        --border-color: #30363d;
+        --text-color: #c9d1d9;
+        --text-bright: #f0f6fc;
+        --accent-gold: #ffd700;
+        --accent-green: #2ea043;
+        --accent-blue: #58a6ff;
+        --hazard-red: #f85149;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 12px;
+        padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 10px;
+        width: 100%;
+        max-width: 820px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        color: var(--text-bright);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        letter-spacing: -0.5px;
+      }
+
+      .tagline {
+        font-size: 0.82rem;
+        color: #8b949e;
+        margin-top: 2px;
+      }
+
+      /* Alert Banner */
+      #alert-banner {
+        display: none;
+        width: 100%;
+        max-width: 820px;
+        background: rgba(218, 54, 51, 0.18);
+        border: 1px solid var(--hazard-red);
+        color: #ff7b72;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 0.82rem;
+        margin-bottom: 10px;
+        text-align: center;
+      }
+
+      /* Metrics Bar */
+      .metrics-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 12px;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 8px 12px;
+        width: 100%;
+        max-width: 820px;
+        margin-bottom: 10px;
+        justify-content: space-between;
+        font-size: 0.80rem;
+      }
+
+      .metric-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .metric-label {
+        color: #8b949e;
+        text-transform: uppercase;
+        font-size: 0.70rem;
+        letter-spacing: 0.5px;
+      }
+
+      .metric-value {
+        font-weight: 600;
+        color: var(--text-bright);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+
+      /* Viewport Stage */
+      .viewport-stage {
+        position: relative;
+        width: 100%;
+        max-width: 820px;
+        max-height: 68vh;
+        background: #000;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #main-canvas {
+        max-width: 100%;
+        max-height: 68vh;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        display: block;
+      }
+
+      #video-feed {
+        display: none;
+      }
+
+      /* Controls */
+      .control-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+        max-width: 820px;
+        margin-top: 10px;
+      }
+
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+      }
+
+      button, .btn-label {
+        background: #21262d;
+        color: var(--text-bright);
+        border: 1px solid var(--border-color);
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: background 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        user-select: none;
+      }
+
+      button:hover:not(:disabled), .btn-label:hover {
+        background: #30363d;
+        border-color: #8b949e;
+      }
+
+      button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      button.primary {
+        background: var(--accent-green);
+        border-color: #2ea043;
+        color: #ffffff;
+        font-weight: 600;
+      }
+
+      button.primary:hover:not(:disabled) {
+        background: #2c974b;
+      }
+
+      button.primary.active {
+        background: var(--hazard-red);
+        border-color: #da3633;
+      }
+
+      .settings-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: center;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.80rem;
+      }
+
+      .settings-row label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+      }
+
+      .settings-row select, .settings-row input[type="range"] {
+        accent-color: var(--accent-blue);
+        background: #21262d;
+        color: var(--text-bright);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        padding: 2px 4px;
+        font-size: 0.78rem;
+      }
+
+      #file-upload {
+        display: none;
+      }
+
+      /* Footer */
+      footer {
+        margin-top: 14px;
+        font-size: 0.75rem;
+        color: #8b949e;
+        text-align: center;
+        max-width: 820px;
+        line-height: 1.4;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-size: 0.68rem;
+        font-weight: 600;
+        background: #21262d;
+        color: var(--accent-blue);
+        border: 1px solid var(--border-color);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>
+        <span>StepView</span>
+        <span class="badge">Web Product</span>
+      </h1>
+      <p class="tagline">On-Device Terrain Semantic Segmentation & 2D Footstep Candidate Engine</p>
+    </header>
+
+    <div id="alert-banner"></div>
+
+    <div class="metrics-bar">
+      <div class="metric-item">
+        <span class="metric-label">Status:</span>
+        <span id="status-text" class="metric-value">Loading...</span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Engine:</span>
+        <span id="metric-provider" class="metric-value" style="color: var(--accent-blue);">WASM</span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Latency:</span>
+        <span id="metric-latency" class="metric-value">-- ms</span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Throughput:</span>
+        <span id="metric-fps" class="metric-value">-- FPS</span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Top Step:</span>
+        <span id="metric-top-step" class="metric-value">Evaluating...</span>
+      </div>
+    </div>
+
+    <div class="viewport-stage">
+      <video id="video-feed" playsinline autoplay muted></video>
+      <canvas id="main-canvas" width="640" height="480"></canvas>
+    </div>
+
+    <div class="control-panel">
+      <div class="button-row">
+        <button id="btn-toggle-camera" class="primary" disabled>Start Camera</button>
+        <button id="btn-sample-trail" disabled>Trail Sample</button>
+        <button id="btn-sample-park" disabled>Park Sample</button>
+        <button id="btn-sample-village" disabled>Village Sample</button>
+        <label for="file-upload" class="btn-label">Upload / Photo</label>
+        <input type="file" id="file-upload" accept="image/*" />
+      </div>
+
+      <div class="settings-row">
+        <label>
+          <input type="checkbox" id="chk-show-seg" checked />
+          <span>Segmentation</span>
+        </label>
+        <label>
+          <span>Opacity:</span>
+          <input type="range" id="slider-alpha" min="0.1" max="0.75" step="0.05" value="0.38" style="width: 70px;" />
+        </label>
+        <label>
+          <input type="checkbox" id="chk-show-proposals" checked />
+          <span>Proposals</span>
+        </label>
+        <label>
+          <span>Pacing:</span>
+          <select id="select-fps">
+            <option value="10">10 FPS (Cool)</option>
+            <option value="15" selected>15 FPS (Default)</option>
+            <option value="20">20 FPS (Fast)</option>
+            <option value="30">30 FPS (Max)</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <footer>
+      <p>
+        StepView runs entirely on-device via <strong>ONNX Runtime Web</strong> (WebAssembly / WebGPU).
+        Zero camera video or frames are ever uploaded or transmitted to any server.
+      </p>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
