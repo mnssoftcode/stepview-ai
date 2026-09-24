@@ -225,3 +225,86 @@ def test_dataset_shape_mismatch_error(tmp_path: Path) -> None:
     dataset = StepViewDataset(root_dir=tmp_path, split="all")
     with pytest.raises(ValueError, match="Shape mismatch"):
         _ = dataset[0]
+
+
+def test_metadata_schema_serialization() -> None:
+    """Verify SampleMetadata serialization to and from dictionary."""
+    meta = SampleMetadata(
+        sample_id="scene005_frame0012",
+        scene_id="scene005",
+        image_rel_path="images/scene005_frame0012.jpg",
+        mask_rel_path="masks/scene005_frame0012.png",
+        split="train",
+        camera_pitch_deg=45.0,
+        camera_height_m=1.25,
+        terrain_type="rocky_dirt",
+        lighting_condition="direct_sun",
+        extra_attributes={"annotator": "agent"},
+    )
+    data_dict = meta.to_dict()
+    assert data_dict["sample_id"] == "scene005_frame0012"
+    assert data_dict["camera_pitch_deg"] == 45.0
+    assert data_dict["extra_attributes"]["annotator"] == "agent"
+
+    reconstructed = SampleMetadata.from_dict(data_dict)
+    assert reconstructed.sample_id == meta.sample_id
+    assert reconstructed.scene_id == meta.scene_id
+    assert reconstructed.camera_pitch_deg == meta.camera_pitch_deg
+    assert reconstructed.extra_attributes == meta.extra_attributes
+
+
+def test_missing_image_file_raises(tmp_path: Path) -> None:
+    """Verify that a missing image file raises FileNotFoundError."""
+    dataset = StepViewDataset(root_dir=tmp_path, split="all")
+    with pytest.raises(FileNotFoundError, match="Image file not found"):
+        dataset.load_image(tmp_path / "nonexistent_image.png")
+
+
+def test_missing_mask_file_raises(tmp_path: Path) -> None:
+    """Verify that a missing mask file raises FileNotFoundError."""
+    dataset = StepViewDataset(root_dir=tmp_path, split="all")
+    with pytest.raises(FileNotFoundError, match="Mask file not found"):
+        dataset.load_mask(tmp_path / "nonexistent_mask.png")
+
+
+def test_visualize_dataset_script_execution(synthetic_dataset_dir: Path, tmp_path: Path) -> None:
+    """Verify that visualize_dataset script runs cleanly on valid synthetic dataset."""
+    import sys
+    from scripts.visualize_dataset import inspect_dataset
+
+    save_dir = tmp_path / "viz_output"
+    exit_code = inspect_dataset(
+        data_dir=synthetic_dataset_dir,
+        split="all",
+        save_dir=save_dir,
+        alpha=0.5,
+        show_gui=False,
+    )
+    assert exit_code == 0
+
+    # Verify that inspection panels were saved
+    saved_panels = list(save_dir.glob("inspect_*.png"))
+    assert len(saved_panels) == 4
+    for panel_path in saved_panels:
+        img = cv2.imread(str(panel_path))
+        assert img is not None
+        assert img.ndim == 3
+
+
+def test_visualize_dataset_detects_invalid_class(synthetic_dataset_dir: Path) -> None:
+    """Verify that visualize_dataset reports defects when invalid class IDs are present."""
+    from scripts.visualize_dataset import inspect_dataset
+
+    # Corrupt one mask with invalid class 42
+    corrupt_mask = np.full((64, 64), 42, dtype=np.uint8)
+    corrupt_mask_path = synthetic_dataset_dir / "masks" / "terrain_sample_000.png"
+    cv2.imwrite(str(corrupt_mask_path), corrupt_mask)
+
+    exit_code = inspect_dataset(
+        data_dir=synthetic_dataset_dir,
+        split="all",
+        show_gui=False,
+    )
+    # Must detect issue and return non-zero
+    assert exit_code == 1
+
