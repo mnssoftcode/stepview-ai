@@ -1,0 +1,475 @@
+{
+  "dataset_name": "StepView RUGD Bootstrap",
+  "version": "0.1.0",
+  "total_samples": 26,
+  "samples": [
+    {
+      "sample_id": "rugd_creek_frame00001",
+      "image_rel_path": "images/rugd_creek_frame00001.png",
+      "mask_rel_path": "masks/rugd_creek_frame00001.png",
+      "scene_id": "rugd_creek",
+      "split": "val",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "creek",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "creek_00001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_creek_frame02001",
+      "image_rel_path": "images/rugd_creek_frame02001.png",
+      "mask_rel_path": "masks/rugd_creek_frame02001.png",
+      "scene_id": "rugd_creek",
+      "split": "val",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "creek",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "creek_02001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_park-1_frame00001",
+      "image_rel_path": "images/rugd_park-1_frame00001.png",
+      "mask_rel_path": "masks/rugd_park-1_frame00001.png",
+      "scene_id": "rugd_park-1",
+      "split": "train",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "park-1",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "park-1_00001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_park-1_frame02001",
+      "image_rel_path": "images/rugd_park-1_frame02001.png",
+      "mask_rel_path": "masks/rugd_park-1_frame02001.png",
+      "scene_id": "rugd_park-1",
+      "split": "train",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "park-1",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "park-1_02001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_park-2_frame00501",
+      "image_rel_path": "images/rugd_park-2_frame00501.png",
+      "mask_rel_path": "masks/rugd_park-2_frame00501.png",
+      "scene_id": "rugd_park-2",
+      "split": "val",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "park-2",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "park-2_00501.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_park-2_frame02001",
+      "image_rel_path": "images/rugd_park-2_frame02001.png",
+      "mask_rel_path": "masks/rugd_park-2_frame02001.png",
+      "scene_id": "rugd_park-2",
+      "split": "val",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "park-2",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "park-2_02001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_park-8_frame00001",
+      "image_rel_path": "images/rugd_park-8_frame00001.png",
+      "mask_rel_path": "masks/rugd_park-8_frame00001.png",
+      "scene_id": "rugd_park-8",
+      "split": "test",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "park-8",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "park-8_00001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_trail-10_frame00001",
+      "image_rel_path": "images/rugd_trail-10_frame00001.png",
+      "mask_rel_path": "masks/rugd_trail-10_frame00001.png",
+      "scene_id": "rugd_trail-10",
+      "split": "train",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "trail-10",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "trail-10_00001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_trail-11_frame00001",
+      "image_rel_path": "images/rugd_trail-11_frame00001.png",
+      "mask_rel_path": "masks/rugd_trail-11_frame00001.png",
+      "scene_id": "rugd_trail-11",
+      "split": "test",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "trail-11",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "trail-11_00001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_trail-11_frame02001",
+      "image_rel_path": "images/rugd_trail-11_frame02001.png",
+      "mask_rel_path": "masks/rugd_trail-11_frame02001.png",
+      "scene_id": "rugd_trail-11",
+      "split": "test",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "trail-11",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "trail-11_02001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_trail-12_frame00501",
+      "image_rel_path": "images/rugd_trail-12_frame00501.png",
+      "mask_rel_path": "masks/rugd_trail-12_frame00501.png",
+      "scene_id": "rugd_trail-12",
+      "split": "train",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "trail-12",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "trail-12_00501.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_trail-13_frame00001",
+      "image_rel_path": "images/rugd_trail-13_frame00001.png",
+      "mask_rel_path": "masks/rugd_trail-13_frame00001.png",
+      "scene_id": "rugd_trail-13",
+      "split": "val",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "trail-13",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "trail-13_00001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_trail-14_frame01001",
+      "image_rel_path": "images/rugd_trail-14_frame01001.png",
+      "mask_rel_path": "masks/rugd_trail-14_frame01001.png",
+      "scene_id": "rugd_trail-14",
+      "split": "train",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "trail-14",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "trail-14_01001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_trail-15_frame00001",
+      "image_rel_path": "images/rugd_trail-15_frame00001.png",
+      "mask_rel_path": "masks/rugd_trail-15_frame00001.png",
+      "scene_id": "rugd_trail-15",
+      "split": "test",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "trail-15",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "trail-15_00001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_trail-3_frame00001",
+      "image_rel_path": "images/rugd_trail-3_frame00001.png",
+      "mask_rel_path": "masks/rugd_trail-3_frame00001.png",
+      "scene_id": "rugd_trail-3",
+      "split": "train",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "trail-3",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "trail-3_00001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_trail-3_frame02001",
+      "image_rel_path": "images/rugd_trail-3_frame02001.png",
+      "mask_rel_path": "masks/rugd_trail-3_frame02001.png",
+      "scene_id": "rugd_trail-3",
+      "split": "train",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "trail-3",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "trail-3_02001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_trail-4_frame00001",
+      "image_rel_path": "images/rugd_trail-4_frame00001.png",
+      "mask_rel_path": "masks/rugd_trail-4_frame00001.png",
+      "scene_id": "rugd_trail-4",
+      "split": "train",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "trail-4",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "trail-4_00001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_trail-4_frame02001",
+      "image_rel_path": "images/rugd_trail-4_frame02001.png",
+      "mask_rel_path": "masks/rugd_trail-4_frame02001.png",
+      "scene_id": "rugd_trail-4",
+      "split": "train",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "trail-4",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "trail-4_02001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_trail-5_frame00001",
+      "image_rel_path": "images/rugd_trail-5_frame00001.png",
+      "mask_rel_path": "masks/rugd_trail-5_frame00001.png",
+      "scene_id": "rugd_trail-5",
+      "split": "train",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "trail-5",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "trail-5_00001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_trail-6_frame00001",
+      "image_rel_path": "images/rugd_trail-6_frame00001.png",
+      "mask_rel_path": "masks/rugd_trail-6_frame00001.png",
+      "scene_id": "rugd_trail-6",
+      "split": "train",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "trail-6",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "trail-6_00001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_trail-6_frame02001",
+      "image_rel_path": "images/rugd_trail-6_frame02001.png",
+      "mask_rel_path": "masks/rugd_trail-6_frame02001.png",
+      "scene_id": "rugd_trail-6",
+      "split": "train",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "trail-6",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "trail-6_02001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_trail-7_frame00001",
+      "image_rel_path": "images/rugd_trail-7_frame00001.png",
+      "mask_rel_path": "masks/rugd_trail-7_frame00001.png",
+      "scene_id": "rugd_trail-7",
+      "split": "train",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "trail-7",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "trail-7_00001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_trail-9_frame00001",
+      "image_rel_path": "images/rugd_trail-9_frame00001.png",
+      "mask_rel_path": "masks/rugd_trail-9_frame00001.png",
+      "scene_id": "rugd_trail-9",
+      "split": "train",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "trail-9",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "trail-9_00001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_trail_frame00001",
+      "image_rel_path": "images/rugd_trail_frame00001.png",
+      "mask_rel_path": "masks/rugd_trail_frame00001.png",
+      "scene_id": "rugd_trail",
+      "split": "train",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "trail",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "trail_00001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_trail_frame02001",
+      "image_rel_path": "images/rugd_trail_frame02001.png",
+      "mask_rel_path": "masks/rugd_trail_frame02001.png",
+      "scene_id": "rugd_trail",
+      "split": "train",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "trail",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "trail_02001.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    },
+    {
+      "sample_id": "rugd_village_frame00003",
+      "image_rel_path": "images/rugd_village_frame00003.png",
+      "mask_rel_path": "masks/rugd_village_frame00003.png",
+      "scene_id": "rugd_village",
+      "split": "test",
+      "camera_pitch_deg": 20.0,
+      "camera_height_m": 0.6,
+      "terrain_type": "village",
+      "lighting_condition": "daylight_outdoor",
+      "weather": "dry",
+      "extra_attributes": {
+        "source": "RUGD",
+        "original_filename": "village_00003.png",
+        "annotation_type": "converted_semantic_mask",
+        "foot_placement_verified": false
+      }
+    }
+  ]
+}

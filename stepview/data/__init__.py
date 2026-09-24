@@ -1,6 +1,6 @@
 """StepView Data Package."""
 
-from stepview.data.dataset import StepViewDataset
+from stepview.data.dataset import StepViewDataset, stepview_collate_fn
 from stepview.data.schema import (
     CLASS_NAMES,
     CLASS_PALETTE,
@@ -13,6 +13,7 @@ from stepview.data.schema import (
 
 __all__ = [
     "StepViewDataset",
+    "stepview_collate_fn",
     "TerrainClass",
     "SampleMetadata",
     "validate_mask_classes",

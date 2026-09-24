@@ -24,6 +24,28 @@ from stepview.data.schema import (
 )
 
 
+def stepview_collate_fn(batch: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Custom collate function for StepView DataLoader batches.
+
+    Stacks image and mask tensors into batch tensors, while preserving
+    string identifiers and metadata dictionaries as lists.
+
+    Args:
+        batch: List of sample dictionaries returned by StepViewDataset.__getitem__.
+
+    Returns:
+        Dict with batched 'image' (B, C, H, W) and 'mask' (B, H, W),
+        and lists for 'sample_id', 'scene_id', and 'metadata'.
+    """
+    return {
+        "image": torch.stack([item["image"] for item in batch], dim=0),
+        "mask": torch.stack([item["mask"] for item in batch], dim=0),
+        "sample_id": [item["sample_id"] for item in batch],
+        "scene_id": [item["scene_id"] for item in batch],
+        "metadata": [item["metadata"] for item in batch],
+    }
+
+
 class StepViewDataset(Dataset):
     """PyTorch Dataset for StepView terrain segmentation.
 

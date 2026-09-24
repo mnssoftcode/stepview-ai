@@ -61,6 +61,7 @@ class SampleMetadata:
     camera_height_m: Optional[float] = None
     terrain_type: Optional[str] = None
     lighting_condition: Optional[str] = None
+    weather: Optional[str] = None
     extra_attributes: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -80,6 +81,7 @@ class SampleMetadata:
             camera_height_m=data.get("camera_height_m"),
             terrain_type=data.get("terrain_type"),
             lighting_condition=data.get("lighting_condition"),
+            weather=data.get("weather"),
             extra_attributes=data.get("extra_attributes", {}),
         )
 

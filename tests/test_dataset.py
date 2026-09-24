@@ -178,14 +178,16 @@ def test_dataset_getitem_contracts(synthetic_dataset_dir: Path) -> None:
 
 def test_dataset_dataloader_batching(synthetic_dataset_dir: Path) -> None:
     """Verify that PyTorch DataLoader batches StepViewDataset samples seamlessly."""
+    from stepview.data import stepview_collate_fn
     dataset = StepViewDataset(root_dir=synthetic_dataset_dir, split="train")
-    dataloader = DataLoader(dataset, batch_size=2, shuffle=False)
+    dataloader = DataLoader(dataset, batch_size=2, shuffle=False, collate_fn=stepview_collate_fn)
 
     batch = next(iter(dataloader))
     assert batch["image"].shape == (2, 3, 64, 64)
     assert batch["mask"].shape == (2, 64, 64)
     assert len(batch["sample_id"]) == 2
     assert len(batch["scene_id"]) == 2
+    assert len(batch["metadata"]) == 2
 
 
 def test_dataset_auto_discovery(tmp_path: Path) -> None:
@@ -307,4 +309,39 @@ def test_visualize_dataset_detects_invalid_class(synthetic_dataset_dir: Path) ->
     )
     # Must detect issue and return non-zero
     assert exit_code == 1
+
+
+def test_rugd_bootstrap_dataset_integrity() -> None:
+    """Verify integrity of real converted RUGD bootstrap data."""
+    data_dir = Path("data")
+    manifest_file = data_dir / "metadata" / "manifest.json"
+    if not manifest_file.is_file():
+        pytest.skip("Bootstrap RUGD data not yet converted.")
+
+    # Check splits
+    train_ds = StepViewDataset(root_dir=data_dir, split="train")
+    val_ds = StepViewDataset(root_dir=data_dir, split="val")
+    test_ds = StepViewDataset(root_dir=data_dir, split="test")
+
+    assert len(train_ds) == 16
+    assert len(val_ds) == 5
+    assert len(test_ds) == 5
+
+    # Check sample item properties
+    sample = train_ds[0]
+    assert sample["image"].ndim == 3
+    assert sample["image"].shape[0] == 3
+    assert sample["mask"].ndim == 2
+    assert sample["image"].shape[1:] == sample["mask"].shape
+    assert sample["sample_id"].startswith("rugd_")
+
+    # Verify no scene leakage across splits
+    train_scenes = {s.scene_id for s in train_ds.samples}
+    val_scenes = {s.scene_id for s in val_ds.samples}
+    test_scenes = {s.scene_id for s in test_ds.samples}
+
+    assert len(train_scenes.intersection(val_scenes)) == 0
+    assert len(train_scenes.intersection(test_scenes)) == 0
+    assert len(val_scenes.intersection(test_scenes)) == 0
+
 
